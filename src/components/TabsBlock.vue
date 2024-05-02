@@ -12,7 +12,9 @@ const route = useRoute();
     <ion-tabs v-if="route.fullPath !== '/'">
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="home" href="/">
+        <ion-tab-button
+            tab="home"
+            href="/orders">
           <ion-icon
               size="small"
               style="margin-bottom: 5px"
@@ -23,7 +25,9 @@ const route = useRoute();
           </ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="radio" href="/">
+        <ion-tab-button
+            tab="radio"
+            href="/data">
           <ion-icon
               size="small"
               style="margin-bottom: 5px"
@@ -34,14 +38,16 @@ const route = useRoute();
           </ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="radio" href="/">
-          <ion-img
-              src="./assets/img/logo.png"
-              style="margin-bottom: 5px; height: 28px"
-          />
-        </ion-tab-button>
+        <!--        <ion-tab-button tab="image" href="/">-->
+        <!--          <ion-img-->
+        <!--              src="./assets/img/logo.png"-->
+        <!--              style="margin-bottom: 5px; height: 28px"-->
+        <!--          />-->
+        <!--        </ion-tab-button>-->
 
-        <ion-tab-button tab="library" href="/">
+        <ion-tab-button
+            tab="schedule"
+            href="/schedule">
           <ion-icon
               size="small"
               style="margin-bottom: 5px"
@@ -52,7 +58,9 @@ const route = useRoute();
           </ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="library" href="/">
+        <ion-tab-button
+            tab="library"
+            href="/settings">
           <ion-icon
               size="small"
               style="margin-bottom: 5px"

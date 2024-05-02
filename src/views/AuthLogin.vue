@@ -1,10 +1,18 @@
-<script setup lang="ts">
-import {useRouter} from "vue-router";
-import {IonPage, IonContent, IonGrid, IonCol, IonImg, IonInput, IonButton, toastController} from "@ionic/vue";
-import axios from "@/utils/axios";
-import {useUserStore} from "@/stores/user.js";
+<script setup>
+import { useRouter } from "vue-router";
+import {
+  IonPage,
+  IonContent,
+  IonCol,
+  IonImg,
+  IonInput,
+  IonButton,
+  toastController
+} from "@ionic/vue";
+import { useUserStore } from "@/stores/user.js";
+import { Form, ErrorMessage, Field } from "vee-validate";
 import * as yup from 'yup';
-import {Form, ErrorMessage, Field} from "vee-validate";
+import axios from "@/utils/axios";
 
 const user = useUserStore();
 const router = useRouter();
@@ -20,7 +28,7 @@ const schema = yup.object().shape({
       .required('Пожалуйста, введите пароль'),
 })
 
-const setOpen = async (state: boolean, text: string) => {
+const setOpen = async (state, text) => {
   const toast = await toastController.create({
     message: text,
     duration: 1500,
@@ -30,7 +38,7 @@ const setOpen = async (state: boolean, text: string) => {
   await toast.present();
 };
 
-const sendForm = async (values: any) => {
+const sendForm = async (values) => {
   axios.post("/auth/staff-login", values)
       .then(async response => {
         console.log(response);
@@ -39,7 +47,7 @@ const sendForm = async (values: any) => {
           localStorage.setItem("token", "Bearer " + response.data.access_token);
           localStorage.setItem("token_exp", response.data.expires_in);
           await user.getProfile()
-          await router.push('/main')
+          await router.push('/data')
         }
       })
       .catch(error => {
@@ -51,7 +59,9 @@ const sendForm = async (values: any) => {
 
 <template>
   <ion-page>
-    <ion-content class="ion-padding">
+    <ion-content
+        color="light"
+                 class="ion-padding">
       <ion-col class="center-content">
         <Form
             style="width: 100%"
