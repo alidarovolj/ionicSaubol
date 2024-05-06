@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted} from 'vue';
+import {nextTick, onMounted} from 'vue';
 import {
   IonPage,
   IonContent,
@@ -8,18 +8,20 @@ import {
   IonCard,
   IonCardHeader,
   IonCardTitle,
-  IonCardSubtitle,
+  IonButtons,
+  IonBackButton,
   IonCardContent,
   IonCol,
   IonButton,
-  IonIcon,
   IonText,
-  toastController
+  IonChip,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  toastController, IonRefresherContent, IonRefresher
 } from '@ionic/vue';
 import {useOrdersStore} from "@/stores/orders.js";
 import {useRoute} from "vue-router";
-import {arrowBack} from 'ionicons/icons';
-import HeaderBlock from "@/components/HeaderBlock.vue";
 
 const orders = useOrdersStore()
 const route = useRoute()
@@ -36,7 +38,7 @@ const setOpen = async (state, text) => {
 
 const acceptOrderLocal = async () => {
   await orders.acceptOrder(orders.resultDetails.id)
-  if(orders.resultAccept !== false) {
+  if (orders.resultAccept !== false) {
     setOpen(true, "Заказ принят");
     await orders.orderDetails(route.params.id)
   } else {
@@ -46,7 +48,7 @@ const acceptOrderLocal = async () => {
 
 const completeOrderLocal = async () => {
   await orders.completeOrder(orders.resultDetails.id)
-  if(orders.resultComplete !== false) {
+  if (orders.resultComplete !== false) {
     setOpen(true, "Заказ завершен");
     await orders.orderDetails(route.params.id)
   } else {
@@ -54,27 +56,37 @@ const completeOrderLocal = async () => {
   }
 }
 
+const handleRefresh = (event) => {
+  setTimeout(async () => {
+    await nextTick()
+    await orders.orderDetails(route.params.id)
+  }, 2000);
+};
+
 onMounted(async () => {
+  await nextTick()
   await orders.orderDetails(route.params.id)
 })
 </script>
 
 <template>
   <ion-page>
-    <HeaderBlock/>
-    <ion-row
-        v-if="orders.resultDetails"
-        class="ion-no-border ion-padding text-mainColor">
-      <ion-button
-          class="ion-no-padding"
-          router-link="/orders"
-          fill="clear"
-      >
-        <ion-icon :icon="arrowBack"></ion-icon>
-        <ion-text class="ion-margin-horizontal">№{{ orders.resultDetails.user_order.order_number }}</ion-text>
-      </ion-button>
-    </ion-row>
+
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-back-button></ion-back-button>
+        </ion-buttons>
+        <ion-title v-if="orders.resultDetails">
+          Заказ №{{ orders.resultDetails.user_order.order_number }}
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
+
     <ion-content color="light">
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
       <ion-grid
           v-if="orders.resultDetails"
           class="ion-padding">
@@ -82,13 +94,15 @@ onMounted(async () => {
           <ion-card class="ion-margin-bottom ion-no-margin">
 
             <ion-card-header>
-              <ion-card-title>
+              <ion-card-title class="ion-margin-bottom">
                 Данные заказчика
               </ion-card-title>
-              <ion-card-subtitle class="text-with-bg">
+              <ion-chip
+                  style="width: max-content"
+                  class="ion-no-margin">
                 ИИН:
                 <ion-text>{{ orders.resultDetails.user.iin }}</ion-text>
-              </ion-card-subtitle>
+              </ion-chip>
             </ion-card-header>
 
             <ion-card-content>
@@ -123,14 +137,16 @@ onMounted(async () => {
               class="ion-no-margin">
 
             <ion-card-header>
-              <ion-card-title>
+              <ion-card-title class="ion-margin-bottom">
                 Данные заказа
               </ion-card-title>
-              <ion-card-subtitle class="text-with-bg">
+              <ion-chip
+                  class="ion-no-margin"
+                  style="width: max-content">
                 Оплачен:
                 <ion-text v-if="orders.resultDetails.user_order.is_paid">Да</ion-text>
                 <ion-text v-else>Нет</ion-text>
-              </ion-card-subtitle>
+              </ion-chip>
             </ion-card-header>
 
             <ion-card-content>

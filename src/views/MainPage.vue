@@ -1,24 +1,25 @@
 <script setup>
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, nextTick} from 'vue';
 import {useVuelidate} from '@vuelidate/core'
 import {required} from '@vuelidate/validators'
 import {
   IonPage,
   IonContent,
-  IonImg,
-  IonRow,
   IonInput,
   IonCol,
-  IonGrid,
   IonButton,
   IonCard,
-  IonCardHeader,
   IonCardTitle,
-  IonCardSubtitle,
+  IonCardHeader,
+  IonCardContent,
   IonSelect,
   IonSelectOption,
   IonText,
-  toastController, IonListHeader
+  IonRefresher,
+  IonRefresherContent,
+  IonGrid,
+  IonRow,
+  toastController
 } from '@ionic/vue';
 import {useUserStore} from "@/stores/user";
 import {storeToRefs} from "pinia";
@@ -47,6 +48,21 @@ const v$ = useVuelidate({
   iin: {required},
   email: {required}
 }, form)
+
+const handleRefresh = (event) => {
+  setTimeout(async () => {
+    pending.value = true
+    await nextTick()
+    await user.getProfile()
+    await jobs.jobsList()
+    form.value.iin = result.value.data.iin
+    form.value.email = result.value.data.email
+    form.value.phone_number = result.value.data.phone_number
+    form.value.specialization_id = result.value.data.staff.specialization.id
+    pending.value = false
+    await event.target.complete();
+  }, 2000);
+};
 
 const sendForm = async () => {
   v$.value.$touch()
@@ -77,6 +93,7 @@ const setOpen = async (state, text) => {
 };
 
 onMounted(async () => {
+  await nextTick()
   await user.getProfile()
   await jobs.jobsList()
   form.value.iin = result.value.data.iin
@@ -93,16 +110,16 @@ onMounted(async () => {
     <ion-content
         color="light"
         v-if="result && !pending">
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
       <ProfileData :dataRes="result"/>
-      <ProfileNavigation/>
-      <ion-list-header class="text-xl ion-margin-top">
-        Мои данные
-      </ion-list-header>
       <ion-card>
+        <ProfileNavigation/>
         <ion-card-header>
-          <ion-card-subtitle>
-            Редактирование общих данных
-          </ion-card-subtitle>
+          <ion-card-title class="text-xl ion-margin-top">
+            Мои данные
+          </ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <ion-col class="ion-no-padding ion-margin-bottom">
@@ -156,19 +173,20 @@ onMounted(async () => {
           <ion-col
               style="display:block;"
               class="ion-no-padding">
-            <ion-col>
+            <ion-col class="ion-no-padding">
               <ion-text style="font-size: 12px">
                 Места работы
               </ion-text>
             </ion-col>
-            <ion-col>
-              <ion-text
+            <ion-grid class="ion-no-padding">
+              <ion-row
                   v-for="(item, index) of result.data.staff.job_places"
-                  :key="index"
-              >
-                {{ item.job_place }}
-              </ion-text>
-            </ion-col>
+                  :key="index">
+                <ion-text>
+                  {{ item.job_place }}
+                </ion-text>
+              </ion-row>
+            </ion-grid>
           </ion-col>
           <ion-button
               @click="sendForm"

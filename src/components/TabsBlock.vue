@@ -58,7 +58,7 @@ const route = useRoute();
           </ion-label>
         </ion-tab-button>
 
-        <ion-tab-button
+        <!-- <ion-tab-button
             tab="library"
             href="/settings">
           <ion-icon
@@ -69,7 +69,7 @@ const route = useRoute();
           <ion-label>
             Настройки
           </ion-label>
-        </ion-tab-button>
+        </ion-tab-button> -->
       </ion-tab-bar>
     </ion-tabs>
   </ion-page>

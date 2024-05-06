@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import {IonButton, IonGrid, IonRow} from "@ionic/vue";
+import {
+  IonButton,
+  IonGrid,
+  IonRow
+} from "@ionic/vue";
 import {ref} from "vue";
 import {useRoute} from "vue-router";
 
@@ -22,7 +26,9 @@ const route = useRoute()
 </script>
 
 <template>
-  <ion-grid class="ion-padding">
+  <ion-grid
+      style="padding-bottom: 0; margin-bottom: 0"
+      class="ion-padding">
     <ion-row>
       <ion-button
           v-for="(item, index) of links"

@@ -1,5 +1,14 @@
 <script setup>
-import {IonCol, IonGrid, IonImg, IonRow, IonText} from "@ionic/vue";
+import {
+  IonCol,
+  IonGrid,
+  IonImg,
+  IonRow,
+  IonCard,
+  IonCardContent,
+  IonChip,
+  IonText
+} from "@ionic/vue";
 
 const props = defineProps({
   dataRes: Object
@@ -7,26 +16,30 @@ const props = defineProps({
 </script>
 
 <template>
-  <ion-grid
-      v-if="props.dataRes"
-      class="ion-padding ion-margin-bottom">
-    <ion-row class="ion-align-items-center">
-      <ion-col size="4">
-        <ion-img
-            src="./assets/img/services/female_doctor.png"
-            alt="Logo">
-        </ion-img>
-      </ion-col>
-      <ion-col
-          size="8"
-          class="flex-column">
-        <ion-text class="ion-margin-bottom">
-          {{ props.dataRes.data.name }}
-        </ion-text>
-        <ion-text class="text-with-bg ion-padding">
-          {{ props.dataRes.data.role.description }}
-        </ion-text>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <ion-card class="ion-margin-bottom">
+    <ion-card-content>
+      <ion-grid v-if="props.dataRes">
+        <ion-row class="ion-align-items-center">
+          <ion-col size="4">
+            <ion-img
+                src="./assets/img/services/female_doctor.png"
+                alt="Logo">
+            </ion-img>
+          </ion-col>
+          <ion-col
+              size="8"
+              class="flex-column">
+            <ion-text class="ion-margin-bottom text-xl">
+              {{ props.dataRes.data.name }}
+            </ion-text>
+            <ion-chip
+                class="ion-no-margin"
+                style="width: max-content">
+              {{ props.dataRes.data.role.description }}
+            </ion-chip>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
 </template>

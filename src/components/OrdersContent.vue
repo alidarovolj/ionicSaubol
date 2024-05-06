@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import {
   IonPage,
   IonContent,
@@ -9,7 +9,7 @@ import {
   IonCard,
   IonCardHeader,
   IonCardContent,
-    IonNavLink,
+  IonNavLink,
   IonText,
   IonCardTitle,
   IonChip,
@@ -41,14 +41,12 @@ const tab = ref('created');
 
 const handleRefresh = (event) => {
   setTimeout(async () => {
-    await nextTick()
     await user.getProfile()
     await orders.listOrders({type: tab.value})
   }, 2000);
 };
 
 onMounted(async () => {
-  await nextTick()
   await user.getProfile()
   await orders.listOrders({type: tab.value})
 })

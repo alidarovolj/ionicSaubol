@@ -1,11 +1,10 @@
 <script setup>
-import {onMounted, ref} from 'vue';
+import {nextTick, onMounted, ref} from 'vue';
 import {useVuelidate} from '@vuelidate/core'
 import {required} from '@vuelidate/validators'
 import {
   IonPage,
   IonContent,
-  IonImg,
   IonRow,
   IonInput,
   IonCol,
@@ -13,10 +12,12 @@ import {
   IonButton,
   IonCard,
   IonCardHeader,
-  IonCardTitle,
-  IonCardSubtitle,
+  IonCardContent,
   IonText,
-  toastController, IonIcon, IonListHeader
+  toastController,
+  IonIcon,
+  IonRefresherContent,
+  IonRefresher
 } from '@ionic/vue';
 import {useUserStore} from "@/stores/user";
 import {storeToRefs} from "pinia";
@@ -24,6 +25,7 @@ import axios from "@/utils/axios";
 import HeaderBlock from "@/components/HeaderBlock.vue";
 import ProfileNavigation from "@/components/ProfileNavigation.vue";
 import {add} from "ionicons/icons";
+import ProfileData from "@/components/ProfileData.vue";
 
 const user = useUserStore()
 const {result} = storeToRefs(user)
@@ -37,6 +39,17 @@ const form = ref({
 const v$ = useVuelidate({
   specialization_details: {required},
 }, form)
+
+const handleRefresh = (event) => {
+  setTimeout(async () => {
+    pending.value = true
+    await nextTick()
+    await user.getProfile()
+    form.value.specialization_details = result.value.data.staff.specialization_details
+    pending.value = false
+    await event.target.complete();
+  }, 2000);
+};
 
 const sendForm = async () => {
   v$.value.$touch()
@@ -67,6 +80,7 @@ const setOpen = async (state, text) => {
 };
 
 onMounted(async () => {
+  await nextTick()
   await user.getProfile()
   form.value.specialization_details = result.value.data.staff.specialization_details
   pending.value = false
@@ -79,35 +93,16 @@ onMounted(async () => {
     <ion-content
         color="light"
         v-if="!pending">
-      <ion-grid class="ion-padding ion-margin-bottom">
-        <ion-row class="ion-align-items-center">
-          <ion-col size="4">
-            <ion-img
-                src="./assets/img/services/female_doctor.png"
-                alt="Logo">
-            </ion-img>
-          </ion-col>
-          <ion-col
-              size="8"
-              class="flex-column">
-            <ion-text class="ion-margin-bottom">
-              {{ result.data.name }}
-            </ion-text>
-            <ion-text class="text-with-bg ion-padding">
-              {{ result.data.role.description }}
-            </ion-text>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-      <ProfileNavigation/>
-      <ion-list-header class="text-xl ion-margin-top">
-        Мои данные
-      </ion-list-header>
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
+      <ProfileData :dataRes="result"/>
       <ion-card>
+        <ProfileNavigation/>
         <ion-card-header>
-          <ion-card-subtitle>
-            Редактирование общих данных
-          </ion-card-subtitle>
+          <ion-card-title class="text-xl ion-margin-top">
+            Мои данные
+          </ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <ion-col

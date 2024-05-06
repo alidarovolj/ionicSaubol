@@ -8,16 +8,15 @@ import {
   IonContent,
   IonButton,
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonSelect,
   IonSelectOption,
   toastController,
   IonItem,
-  IonLabel,
+  IonGrid,
+  IonCardContent,
   IonList,
   IonListHeader,
-  IonSpinner
+  IonSpinner, IonRefresherContent, IonRefresher
 } from '@ionic/vue';
 import HeaderBlock from "@/components/HeaderBlock.vue";
 
@@ -167,6 +166,25 @@ const checkTime = (item) => {
   }
 };
 
+const handleRefresh = (event) => {
+  setTimeout(async () => {
+    await nextTick()
+    await user.getProfile()
+    form.value.schedule.duration = result.value.data.staff.schedule[0].duration
+    periods.value = generateTimes(form.value.schedule.duration)
+    pending.value = false
+
+    result.value.data.staff.schedule.forEach(schedule => {
+      const day = days.value.find(day => day.value === schedule.weekday_number);
+      if (day) {
+        addDay(day);
+      }
+    });
+
+    times.value = result.value.data.staff.schedule[0].times
+  }, 2000);
+};
+
 // watch(() => form.value.schedule.duration, () => {
 //   times.value = [];
 //   periods.value = [];
@@ -179,13 +197,19 @@ const checkTime = (item) => {
   <ion-page>
     <HeaderBlock/>
     <ion-content color="light">
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
       <ion-list-header class="text-xl ion-margin-top">
         График работы
       </ion-list-header>
       <ion-card v-if="!pending">
         <ion-card-content>
           <ion-item class="text-sm">
-            <ion-select label="Продолжительность" v-model="form.schedule.duration" @ionChange="setDuration">
+            <ion-select
+                label="Продолжительность"
+                v-model="form.schedule.duration"
+                @ionChange="setDuration">
               <ion-select-option :value="15">15 мин</ion-select-option>
               <ion-select-option :value="30">30 мин</ion-select-option>
               <ion-select-option :value="45">45 мин</ion-select-option>
@@ -198,11 +222,12 @@ const checkTime = (item) => {
       </ion-list-header>
       <ion-card>
         <ion-card-content>
-          <ion-list>
+          <ion-list class=" no-border">
             <ion-item
                 v-for="(day, index) of days"
                 :key="index"
                 class="text-sm"
+                :class="[{ 'rounded-t' : index === 0 }, { 'rounded-b' : index === days.length - 1 }]"
                 @click="addDay(day)"
                 :color="form.schedule.days.some(scheduleDay => scheduleDay.weekday_number === day.value) ? 'primary' : ''">
               {{ day.title }}
@@ -245,3 +270,20 @@ const checkTime = (item) => {
     </ion-content>
   </ion-page>
 </template>
+
+<style scoped>
+.rounded-t {
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+}
+
+.rounded-b {
+  border-bottom-left-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+.no-border .ion-native {
+  border: none !important;
+  border-color: transparent !important;
+}
+</style>

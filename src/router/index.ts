@@ -27,11 +27,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/SchedulePage.vue'),
         meta: { requiresAuth: true },
       },
-      {
-        path: 'settings',
-        component: () => import('../views/SettingsPage.vue'),
-        meta: { requiresAuth: true }
-      },
+      // {
+      //   path: 'settings',
+      //   component: () => import('../views/SettingsPage.vue'),
+      //   meta: { requiresAuth: true }
+      // },
       {
         path: 'orders',
         component: () => import('../views/OrdersPage.vue'),

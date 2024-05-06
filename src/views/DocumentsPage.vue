@@ -10,16 +10,15 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonListHeader,
   IonModal,
   IonHeader,
   IonToolbar,
   IonButtons,
-  IonInput
+  IonInput, IonCardHeader, IonRefresherContent, IonRefresher
 } from '@ionic/vue';
 import {onMounted, nextTick, ref} from "vue";
 import {storeToRefs} from "pinia";
-import {download, trash, attach} from "ionicons/icons";
+import {download, trash, attach, add} from "ionicons/icons";
 import ProfileNavigation from "@/components/ProfileNavigation.vue";
 import HeaderBlock from "@/components/HeaderBlock.vue";
 import ProfileData from "@/components/ProfileData.vue";
@@ -45,6 +44,13 @@ const onWillDismiss = (ev: CustomEvent<OverlayEventDetail>) => {
   }
 };
 
+const handleRefresh = (event: CustomEvent) => {
+  setTimeout(async () => {
+    await nextTick()
+    await user.getProfile()
+  }, 2000);
+};
+
 onMounted(async () => {
   await nextTick()
   await user.getProfile()
@@ -57,18 +63,23 @@ onMounted(async () => {
     <ion-content
         color="light"
         v-if="result">
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
       <ProfileData :data-res="result"/>
-      <ProfileNavigation/>
-      <ion-list-header class="text-xl ion-margin-top">
-        Дипломы
-      </ion-list-header>
       <ion-card>
+        <ProfileNavigation/>
+        <ion-card-header>
+          <ion-card-title class="text-xl ion-margin-top">
+            Дипломы
+          </ion-card-title>
+        </ion-card-header>
         <ion-card-content>
           <ion-list>
             <ion-item
                 v-for="(item, index) of result.diploma"
                 :key="index"
-                class="ion-align-items-center">
+                class="ion-align-items-center ion-no-padding">
               <ion-icon
                   style="margin-bottom: 5px"
                   :icon="attach"
@@ -99,27 +110,35 @@ onMounted(async () => {
             <ion-button
                 id="open-modal"
                 expand="block">
-              <ion-icon slot="start" :icon="IconPlus"/>
-              <ion-label>Добавить диплом</ion-label>
+              <ion-icon
+                  slot="start"
+                  :icon="add"
+              />
+              <ion-label>
+                Добавить диплом
+              </ion-label>
             </ion-button>
           </ion-list>
         </ion-card-content>
-      </ion-card>
-      <ion-list-header class="text-xl ion-margin-top">
-        Сертификаты
-      </ion-list-header>
-      <ion-card>
+
+        <ion-card-header>
+          <ion-card-title class="text-xl ion-margin-top">
+            Сертификаты
+          </ion-card-title>
+        </ion-card-header>
         <ion-card-content>
           <ion-list>
             <ion-item
                 v-for="(item, index) of result.certificates"
                 :key="index"
-                class="ion-align-items-center">
+                class="ion-align-items-center ion-no-padding">
               <ion-icon
                   style="margin-bottom: 5px"
                   :icon="attach"
               />
-              <ion-label>{{ item.filename }}</ion-label>
+              <ion-label>
+                {{ item.filename }}
+              </ion-label>
               <ion-button
                   slot="end"
                   fill="clear"
@@ -130,7 +149,10 @@ onMounted(async () => {
                     :icon="download"
                 />
               </ion-button>
-              <ion-button slot="end" fill="clear" color="danger">
+              <ion-button
+                  slot="end"
+                  fill="clear"
+                  color="danger">
                 <ion-icon
                     style="margin-bottom: 5px"
                     :icon="trash"
@@ -140,13 +162,19 @@ onMounted(async () => {
             <ion-button
                 id="open-modal"
                 expand="block">
-              <ion-icon slot="start" :icon="IconPlus"/>
+              <ion-icon
+                  slot="start"
+                  :icon="add"
+              />
               <ion-label>Добавить сертификат</ion-label>
             </ion-button>
           </ion-list>
         </ion-card-content>
       </ion-card>
-      <ion-modal ref="modal" trigger="open-modal" @willDismiss="onWillDismiss">
+      <ion-modal
+          ref="modal"
+          trigger="open-modal"
+          @willDismiss="onWillDismiss">
         <ion-header>
           <ion-toolbar>
             <ion-buttons slot="start">
