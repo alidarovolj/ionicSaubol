@@ -18,7 +18,7 @@ import {
   IonHeader,
   IonToolbar,
   IonTitle,
-  toastController, IonRefresherContent, IonRefresher
+  toastController, IonRefresherContent, IonRefresher, IonSpinner
 } from '@ionic/vue';
 import {useOrdersStore} from "@/stores/orders.js";
 import {useRoute} from "vue-router";
@@ -83,7 +83,9 @@ onMounted(async () => {
       </ion-toolbar>
     </ion-header>
 
-    <ion-content color="light">
+    <ion-content
+        ref="content"
+        fullscreen>
       <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
@@ -91,7 +93,7 @@ onMounted(async () => {
           v-if="orders.resultDetails"
           class="ion-padding">
         <ion-col>
-          <ion-card class="ion-margin-bottom ion-no-margin">
+          <ion-card color="light" class="ion-margin-bottom ion-no-margin">
 
             <ion-card-header>
               <ion-card-title class="ion-margin-bottom">
@@ -134,6 +136,7 @@ onMounted(async () => {
           </ion-card>
           <ion-card
               v-if="orders.resultDetails"
+              color="light"
               class="ion-no-margin">
 
             <ion-card-header>
@@ -212,6 +215,7 @@ onMounted(async () => {
           Завершить заказ
         </ion-button>
       </ion-grid>
+      <ion-spinner v-else></ion-spinner>
     </ion-content>
   </ion-page>
 </template>

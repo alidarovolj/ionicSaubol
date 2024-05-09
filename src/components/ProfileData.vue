@@ -16,13 +16,23 @@ const props = defineProps({
 </script>
 
 <template>
-  <ion-card class="ion-margin-bottom">
+  <ion-card
+      color="light"
+      class="ion-margin-bottom">
     <ion-card-content>
       <ion-grid v-if="props.dataRes">
         <ion-row class="ion-align-items-center">
           <ion-col size="4">
             <ion-img
+                v-if="!props.dataRes.data.img"
+                style="width: 100px; height: 100px; border-radius: 100%; object-fit: cover"
                 src="./assets/img/services/female_doctor.png"
+                alt="Logo">
+            </ion-img>
+            <ion-img
+                v-else
+                style="width: 100px; height: 100px; border-radius: 100%; object-fit: cover"
+                :src="props.dataRes.data.img"
                 alt="Logo">
             </ion-img>
           </ion-col>

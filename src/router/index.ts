@@ -13,14 +13,26 @@ const routes: Array<RouteRecordRaw> = [
     component: TabsBlock,
     children: [
       {
-        path: 'data',
+        path: 'my-profile',
         component: () => import('../views/MainPage.vue'),
         meta: { requiresAuth: true },
-      },
-      {
-        path: 'profile',
-        component: () => import('../views/ProfileSpecs.vue'),
-        meta: { requiresAuth: true },
+        children: [
+          {
+            path: 'data',
+            component: () => import('../views/MyData.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'profile',
+            component: () => import('../views/ProfileSpecs.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'documents',
+            component: () => import('../views/DocumentsPage.vue'),
+            meta: { requiresAuth: true }
+          },
+        ]
       },
       {
         path: 'schedule',
@@ -35,11 +47,6 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'orders',
         component: () => import('../views/OrdersPage.vue'),
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'documents',
-        component: () => import('../views/DocumentsPage.vue'),
         meta: { requiresAuth: true }
       },
       {
@@ -59,7 +66,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
   if (to.path === '/' && token) {
-    next({ path: '/data' }); // redirect to main page
+    next({ path: '/my-profile/data' }); // redirect to main page
   } else if (to.meta.requiresAuth && !token) {
     next({ path: '/' }); // redirect to login page
   } else {

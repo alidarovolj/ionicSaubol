@@ -5,26 +5,16 @@ import {required} from '@vuelidate/validators'
 import {
   IonPage,
   IonContent,
-  IonInput,
   IonCol,
-  IonButton,
   IonCard,
-  IonCardTitle,
-  IonCardHeader,
-  IonCardContent,
-  IonSelect,
-  IonSelectOption,
-  IonText,
   IonRefresher,
   IonRefresherContent,
-  IonGrid,
-  IonRow,
-  toastController
+  IonSpinner,
+  IonRouterOutlet
 } from '@ionic/vue';
 import {useUserStore} from "@/stores/user";
 import {storeToRefs} from "pinia";
 import {useJobsStore} from "@/stores/jobs.js";
-import axios from "@/utils/axios";
 import HeaderBlock from "@/components/HeaderBlock.vue";
 import ProfileNavigation from "@/components/ProfileNavigation.vue";
 import ProfileData from "@/components/ProfileData.vue";
@@ -64,34 +54,6 @@ const handleRefresh = (event) => {
   }, 2000);
 };
 
-const sendForm = async () => {
-  v$.value.$touch()
-  if (v$.value.$error) return
-
-  axios.put("/doctors/", form.value)
-      .then(async response => {
-        console.log(response);
-
-        if (response.status === 200) {
-          await user.getProfile()
-          setOpen(true, "Ваши данные успешно отредактированы");
-        }
-      })
-      .catch(error => {
-        console.log(error.message);
-      });
-}
-
-const setOpen = async (state, text) => {
-  const toast = await toastController.create({
-    message: text,
-    duration: 1500,
-    position: 'bottom',
-  });
-
-  await toast.present();
-};
-
 onMounted(async () => {
   await nextTick()
   await user.getProfile()
@@ -107,95 +69,28 @@ onMounted(async () => {
 <template>
   <ion-page>
     <HeaderBlock/>
-    <ion-content
-        color="light"
-        v-if="result && !pending">
+    <ion-content ref="content">
       <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
-      <ProfileData :dataRes="result"/>
-      <ion-card>
-        <ProfileNavigation/>
-        <ion-card-header>
-          <ion-card-title class="text-xl ion-margin-top">
-            Мои данные
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-col class="ion-no-padding ion-margin-bottom">
-            <ion-select
-                v-model="form.specialization_id"
-                label="Профиль работы"
-                label-placement="stacked">
-              <ion-select-option :value="null">
-                Выберите профиль работы
-              </ion-select-option>
-              <ion-select-option
-                  v-for="(item, index) of jobs.result"
-                  :key="index"
-                  :value="item.id">
-                {{ item.full_name }}
-              </ion-select-option>
-            </ion-select>
-          </ion-col>
-
-          <ion-col class="ion-no-padding ion-margin-bottom">
-            <ion-input
-                v-model="form.phone_number"
-                label="Номер телефона"
-                label-placement="stacked"
-                type="number"
-                placeholder="+7 (747) 777-77-77">
-            </ion-input>
-          </ion-col>
-
-          <ion-col class="ion-no-padding ion-margin-bottom">
-            <ion-input
-                v-model="form.iin"
-                label="ИИН"
-                label-placement="stacked"
-                type="number"
-                required
-                placeholder="123456789012">
-            </ion-input>
-          </ion-col>
-
-          <ion-col class="ion-no-padding ion-margin-bottom">
-            <ion-input
-                v-model="form.email"
-                label="Email"
-                type="email"
-                label-placement="stacked"
-                placeholder="email@domain.com">
-            </ion-input>
-          </ion-col>
-
-          <ion-col
-              style="display:block;"
-              class="ion-no-padding">
-            <ion-col class="ion-no-padding">
-              <ion-text style="font-size: 12px">
-                Места работы
-              </ion-text>
-            </ion-col>
-            <ion-grid class="ion-no-padding">
-              <ion-row
-                  v-for="(item, index) of result.data.staff.job_places"
-                  :key="index">
-                <ion-text>
-                  {{ item.job_place }}
-                </ion-text>
-              </ion-row>
-            </ion-grid>
-          </ion-col>
-          <ion-button
-              @click="sendForm"
-              class="ion-margin-top"
-              expand="block">
-            Сохранить
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
+      <ion-col
+          v-if="result"
+          class="ion-no-padding ion-no-margin"
+      >
+        <ProfileData :dataRes="result"/>
+        <ion-card
+            color="light"
+            style="margin-bottom: 0">
+          <ProfileNavigation/>
+        </ion-card>
+        <ion-card
+            color="light"
+            class="ion-no-padding ion-no-margin"
+            style="height: 100%">
+          <ion-router-outlet></ion-router-outlet>
+        </ion-card>
+      </ion-col>
+      <ion-spinner v-else></ion-spinner>
     </ion-content>
   </ion-page>
 </template>

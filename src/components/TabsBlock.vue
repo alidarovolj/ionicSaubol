@@ -9,14 +9,14 @@ const route = useRoute();
 
 <template>
   <ion-page>
-    <ion-tabs v-if="route.fullPath !== '/'">
+    <ion-tabs
+        v-if="route.fullPath !== '/'">
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom">
         <ion-tab-button
             tab="home"
             href="/orders">
           <ion-icon
-              size="small"
               style="margin-bottom: 5px"
               :icon="clipboard"
           />
@@ -27,9 +27,8 @@ const route = useRoute();
 
         <ion-tab-button
             tab="radio"
-            href="/data">
+            href="/my-profile/data">
           <ion-icon
-              size="small"
               style="margin-bottom: 5px"
               :icon="person"
           />
@@ -49,7 +48,6 @@ const route = useRoute();
             tab="schedule"
             href="/schedule">
           <ion-icon
-              size="small"
               style="margin-bottom: 5px"
               :icon="calendar"
           />

@@ -15,17 +15,14 @@ import {
   IonCardContent,
   IonText,
   toastController,
+  IonCardTitle,
   IonIcon,
-  IonRefresherContent,
-  IonRefresher
+  IonSpinner
 } from '@ionic/vue';
 import {useUserStore} from "@/stores/user";
 import {storeToRefs} from "pinia";
 import axios from "@/utils/axios";
-import HeaderBlock from "@/components/HeaderBlock.vue";
-import ProfileNavigation from "@/components/ProfileNavigation.vue";
 import {add} from "ionicons/icons";
-import ProfileData from "@/components/ProfileData.vue";
 
 const user = useUserStore()
 const {result} = storeToRefs(user)
@@ -39,17 +36,6 @@ const form = ref({
 const v$ = useVuelidate({
   specialization_details: {required},
 }, form)
-
-const handleRefresh = (event) => {
-  setTimeout(async () => {
-    pending.value = true
-    await nextTick()
-    await user.getProfile()
-    form.value.specialization_details = result.value.data.staff.specialization_details
-    pending.value = false
-    await event.target.complete();
-  }, 2000);
-};
 
 const sendForm = async () => {
   v$.value.$touch()
@@ -89,53 +75,52 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <HeaderBlock/>
     <ion-content
-        color="light"
-        v-if="!pending">
-      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
-      <ProfileData :dataRes="result"/>
-      <ion-card>
-        <ProfileNavigation/>
-        <ion-card-header>
-          <ion-card-title class="text-xl ion-margin-top">
-            Мои данные
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-col
-              v-for="(item, index) of form.specialization_details"
-              :key="index"
-              class="ion-no-padding ion-margin-bottom">
-            <ion-input
-                v-model="form.specialization_details[index]"
-                label="Название"
-                label-placement="stacked"
-                placeholder="Введите название">
-            </ion-input>
-          </ion-col>
-          <ion-grid @click="form.specialization_details.push('')">
-            <ion-row style="color: #fe2c39">
-              <ion-icon
-                  size="small"
-                  :icon="add"
-                  style="margin-right: 10px"
-              />
-              <ion-text>
-                Добавить новое поле
-              </ion-text>
-            </ion-row>
-          </ion-grid>
-          <ion-button
-              @click="sendForm"
-              class="ion-margin-top"
-              expand="block">
-            Сохранить
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
+        scroll-y="false"
+        ref="content"
+        fullscreen>
+      <ion-col v-if="result">
+        <ion-card color="light">
+          <ion-card-header>
+            <ion-card-title class="text-xl ion-margin-top">
+              Мои данные
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-col
+                v-for="(item, index) of form.specialization_details"
+                :key="index"
+                class="ion-no-padding ion-margin-bottom">
+              <ion-input
+                  v-model="form.specialization_details[index]"
+                  class="ion-margin-bottom"
+                  label="Название"
+                  label-placement="stacked"
+                  placeholder="Введите название">
+              </ion-input>
+            </ion-col>
+            <ion-grid @click="form.specialization_details.push('')">
+              <ion-row style="color: #fe2c39">
+                <ion-icon
+                    size="small"
+                    :icon="add"
+                    style="margin-right: 10px"
+                />
+                <ion-text>
+                  Добавить новое поле
+                </ion-text>
+              </ion-row>
+            </ion-grid>
+            <ion-button
+                @click="sendForm"
+                class="ion-margin-top"
+                expand="block">
+              Сохранить
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-spinner v-else></ion-spinner>
     </ion-content>
   </ion-page>
 </template>

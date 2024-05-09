@@ -51,7 +51,7 @@ const sendForm = async (values) => {
           localStorage.setItem("token", "Bearer " + response.data.access_token);
           localStorage.setItem("token_exp", response.data.expires_in);
           await user.getProfile()
-          await router.push('/data')
+          await router.push('/my-profile/data')
         }
       })
       .catch(error => {
@@ -64,12 +64,13 @@ const sendForm = async (values) => {
 <template>
   <ion-page>
     <ion-content
-        color="light"
+        ref="content"
         class="ion-padding">
       <ion-col
           size="12"
           class="center-content">
         <ion-card
+            color="light"
             style="width: 100%"
             class="ion-padding">
           <ion-grid>

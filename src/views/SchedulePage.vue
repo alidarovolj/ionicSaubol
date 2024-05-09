@@ -15,6 +15,9 @@ import {
   IonGrid,
   IonCardContent,
   IonList,
+  IonCol,
+  IonRow,
+  IonText,
   IonListHeader,
   IonSpinner, IonRefresherContent, IonRefresher
 } from '@ionic/vue';
@@ -184,89 +187,93 @@ const handleRefresh = (event) => {
     times.value = result.value.data.staff.schedule[0].times
   }, 2000);
 };
-
-// watch(() => form.value.schedule.duration, () => {
-//   times.value = [];
-//   periods.value = [];
-//   periods.value = [...generateTimes(form.value.schedule.duration)];
-//   form.value.schedule.days = []
-// }, {deep: true});
 </script>
 
 <template>
   <ion-page>
     <HeaderBlock/>
-    <ion-content color="light">
+    <ion-content
+        ref="content"
+        fullscreen>
       <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
-      <ion-list-header class="text-xl ion-margin-top">
-        График работы
-      </ion-list-header>
-      <ion-card v-if="!pending">
-        <ion-card-content>
-          <ion-item class="text-sm">
-            <ion-select
-                label="Продолжительность"
-                v-model="form.schedule.duration"
-                @ionChange="setDuration">
-              <ion-select-option :value="15">15 мин</ion-select-option>
-              <ion-select-option :value="30">30 мин</ion-select-option>
-              <ion-select-option :value="45">45 мин</ion-select-option>
-            </ion-select>
-          </ion-item>
-        </ion-card-content>
-      </ion-card>
-      <ion-list-header class="text-xl">
-        Дни приема
-      </ion-list-header>
-      <ion-card>
-        <ion-card-content>
-          <ion-list class=" no-border">
-            <ion-item
-                v-for="(day, index) of days"
-                :key="index"
-                class="text-sm"
-                :class="[{ 'rounded-t' : index === 0 }, { 'rounded-b' : index === days.length - 1 }]"
-                @click="addDay(day)"
-                :color="form.schedule.days.some(scheduleDay => scheduleDay.weekday_number === day.value) ? 'primary' : ''">
-              {{ day.title }}
+      <ion-col v-if="result">
+        <ion-list-header class="text-xl ion-margin-top">
+          График работы
+        </ion-list-header>
+        <ion-card v-if="!pending">
+          <ion-card-content>
+            <ion-item class="text-sm">
+              <ion-select
+                  label="Продолжительность"
+                  v-model="form.schedule.duration"
+                  @ionChange="setDuration">
+                <ion-select-option :value="15">15 мин</ion-select-option>
+                <ion-select-option :value="30">30 мин</ion-select-option>
+                <ion-select-option :value="45">45 мин</ion-select-option>
+              </ion-select>
             </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-      <ion-list-header class="text-xl">
-        Время приема
-      </ion-list-header>
-      <ion-card>
-        <ion-card-content>
-          <ion-list class="text-sm">
-            <ion-item
-                v-for="(item, index) of periods"
-                :key="index"
-                class="text-sm"
-                @click="checkTime(item)"
-                :color="times.some(time => time.start === item.start && time.end === item.end) ? 'primary' : ''">
-              {{ item.start }} - {{ item.end }}
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-      <ion-grid class="ion-padding">
-        <ion-button
-            v-if="!loading"
-            @click="sendForm"
-            expand="full"
-            color="primary">
-          Сохранить
-        </ion-button>
-        <ion-button
-            v-else
-            expand="full"
-            color="primary">
-          <ion-spinner name="dots"></ion-spinner>
-        </ion-button>
-      </ion-grid>
+          </ion-card-content>
+        </ion-card>
+        <ion-list-header class="text-xl">
+          Дни приема
+        </ion-list-header>
+        <ion-card>
+          <ion-card-content>
+            <ion-list class=" no-border">
+              <ion-item
+                  v-for="(day, index) of days"
+                  :key="index"
+                  class="text-sm"
+                  :class="[{ 'rounded-t' : index === 0 }, { 'rounded-b' : index === days.length - 1 }]"
+                  @click="addDay(day)"
+                  :color="form.schedule.days.some(scheduleDay => scheduleDay.weekday_number === day.value) ? 'primary' : ''">
+                {{ day.title }}
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+        <ion-list-header class="text-xl">
+          Время приема
+        </ion-list-header>
+        <ion-card>
+          <ion-card-content>
+            <ion-grid class="text-sm">
+              <ion-row>
+                <ion-col
+                    v-for="(item, index) of periods"
+                    :key="index"
+                    size="6"
+                    class="text-sm"
+                    @click="checkTime(item)">
+                  <ion-button
+                      style="width: 100%"
+                      :color="times.some(time => time.start === item.start && time.end === item.end) ? 'primary' : 'light'">
+                    {{ item.start }} - {{ item.end }}
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+        <ion-grid class="ion-padding">
+          <ion-button
+              v-if="!loading"
+              @click="sendForm"
+              style="width: 100%"
+              color="primary">
+            Сохранить
+          </ion-button>
+          <ion-button
+              v-else
+              expand="full"
+              color="primary">
+            <ion-spinner name="dots"></ion-spinner>
+          </ion-button>
+        </ion-grid>
+      </ion-col>
+      <ion-spinner v-else></ion-spinner>
     </ion-content>
   </ion-page>
 </template>

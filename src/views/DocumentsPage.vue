@@ -14,17 +14,37 @@ import {
   IonHeader,
   IonToolbar,
   IonButtons,
-  IonInput, IonCardHeader, IonRefresherContent, IonRefresher
+  IonSpinner,
+  IonText,
+  IonCol,
+  IonCardTitle,
+  IonCardHeader, IonImg, toastController
 } from '@ionic/vue';
 import {onMounted, nextTick, ref} from "vue";
 import {storeToRefs} from "pinia";
 import {download, trash, attach, add} from "ionicons/icons";
-import ProfileNavigation from "@/components/ProfileNavigation.vue";
-import HeaderBlock from "@/components/HeaderBlock.vue";
-import ProfileData from "@/components/ProfileData.vue";
+import {useStaffStore} from "@/stores/staff";
 
 const user = useUserStore()
 const {result} = storeToRefs(user)
+
+const currentType = ref(null)
+
+const staff = useStaffStore()
+
+const importDoc = useStaffStore()
+
+const fileInput = ref(null);
+
+const form = ref({
+  type: "diploma", // or "diploma",
+  documents: []
+})
+
+const formCert = ref({
+  type: "certificate", // or "diploma",
+  documents: []
+})
 
 const modal = ref();
 const input = ref();
@@ -38,18 +58,39 @@ const confirm = () => {
   modal.value.$el.dismiss(name, 'confirm');
 };
 
-const onWillDismiss = (ev: CustomEvent<OverlayEventDetail>) => {
-  if (ev.detail.role === 'confirm') {
-    message.value = `Hello, ${ev.detail.data}!`;
-  }
+const setOpen = async (state, text) => {
+  const toast = await toastController.create({
+    message: text,
+    duration: 1500,
+    position: 'bottom',
+  });
+
+  await toast.present();
 };
 
-const handleRefresh = (event: CustomEvent) => {
-  setTimeout(async () => {
-    await nextTick()
-    await user.getProfile()
-  }, 2000);
-};
+const onFileChange = async (e) => {
+  await importDoc.importDoc(e.target.files[0])
+  await nextTick()
+  form.value.documents.push(importDoc.resultDoc.filename)
+}
+
+const onFileChangeCert = async (e) => {
+  await importDoc.importDoc(e.target.files[0])
+  await nextTick()
+  formCert.value.documents.push(importDoc.resultDoc.filename)
+}
+
+const sendForm = async (type) => {
+  await nextTick()
+  if(type === 'diplomas') {
+    await staff.uploadFiles(form.value)
+  } else {
+    await staff.uploadFiles(formCert.value)
+  }
+  await user.getProfile()
+  cancel()
+  setOpen(true, "Документ успешно загружен");
+}
 
 onMounted(async () => {
   await nextTick()
@@ -59,150 +100,182 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <HeaderBlock/>
     <ion-content
-        color="light"
-        v-if="result">
-      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
-      <ProfileData :data-res="result"/>
-      <ion-card>
-        <ProfileNavigation/>
-        <ion-card-header>
-          <ion-card-title class="text-xl ion-margin-top">
-            Дипломы
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list>
-            <ion-item
-                v-for="(item, index) of result.diploma"
-                :key="index"
-                class="ion-align-items-center ion-no-padding">
-              <ion-icon
-                  style="margin-bottom: 5px"
-                  :icon="attach"
-              />
-              <ion-label>
-                {{ item.filename }}
-              </ion-label>
-              <ion-button
-                  slot="end"
-                  fill="clear"
-                  :href="item.path"
-                  target="_blank">
+        scroll-y="false"
+        ref="content"
+        fullscreen>
+      <ion-col v-if="result">
+        <ion-card color="light">
+          <ion-card-header>
+            <ion-card-title class="text-xl ion-margin-top">
+              Дипломы
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item
+                  v-for="(item, index) of result.diploma"
+                  :key="index"
+                  color="light"
+                  class="ion-align-items-center ion-no-padding">
                 <ion-icon
+                    color="light"
                     style="margin-bottom: 5px"
-                    :icon="download"
+                    :icon="attach"
                 />
-              </ion-button>
+                <ion-label>
+                  {{ item.filename }}
+                </ion-label>
+                <ion-button
+                    slot="end"
+                    fill="clear"
+                    :href="item.path"
+                    target="_blank">
+                  <ion-icon
+                      style="margin-bottom: 5px"
+                      :icon="download"
+                  />
+                </ion-button>
+                <ion-button
+                    slot="end"
+                    fill="clear"
+                    color="danger">
+                  <ion-icon
+                      style="margin-bottom: 5px"
+                      :icon="trash"
+                  />
+                </ion-button>
+              </ion-item>
               <ion-button
-                  slot="end"
-                  fill="clear"
-                  color="danger">
+                  @click="currentType = 'diplomas'"
+                  id="open-modal"
+                  class="ion-no-margin"
+                  expand="block">
                 <ion-icon
-                    style="margin-bottom: 5px"
-                    :icon="trash"
+                    slot="start"
+                    :icon="add"
                 />
+                <ion-label>
+                  Добавить диплом
+                </ion-label>
               </ion-button>
-            </ion-item>
-            <ion-button
-                id="open-modal"
-                expand="block">
-              <ion-icon
-                  slot="start"
-                  :icon="add"
-              />
-              <ion-label>
-                Добавить диплом
-              </ion-label>
-            </ion-button>
-          </ion-list>
-        </ion-card-content>
+            </ion-list>
+          </ion-card-content>
 
-        <ion-card-header>
-          <ion-card-title class="text-xl ion-margin-top">
-            Сертификаты
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list>
-            <ion-item
-                v-for="(item, index) of result.certificates"
-                :key="index"
-                class="ion-align-items-center ion-no-padding">
-              <ion-icon
-                  style="margin-bottom: 5px"
-                  :icon="attach"
-              />
-              <ion-label>
-                {{ item.filename }}
-              </ion-label>
-              <ion-button
-                  slot="end"
-                  fill="clear"
-                  :href="item.path"
-                  target="_blank">
+          <ion-card-header>
+            <ion-card-title class="text-xl ion-margin-top">
+              Сертификаты
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item
+                  v-for="(item, index) of result.certificates"
+                  :key="index"
+                  color="light"
+                  class="ion-align-items-center ion-no-padding">
                 <ion-icon
                     style="margin-bottom: 5px"
-                    :icon="download"
+                    :icon="attach"
                 />
-              </ion-button>
+                <ion-label>
+                  {{ item.filename }}
+                </ion-label>
+                <ion-button
+                    slot="end"
+                    fill="clear"
+                    :href="item.path"
+                    target="_blank">
+                  <ion-icon
+                      style="margin-bottom: 5px"
+                      :icon="download"
+                  />
+                </ion-button>
+                <ion-button
+                    slot="end"
+                    fill="clear"
+                    color="danger">
+                  <ion-icon
+                      style="margin-bottom: 5px"
+                      :icon="trash"
+                  />
+                </ion-button>
+              </ion-item>
               <ion-button
-                  slot="end"
-                  fill="clear"
-                  color="danger">
+                  @click="currentType = 'cert'"
+                  id="open-modal"
+                  class="ion-no-margin"
+                  expand="block">
                 <ion-icon
-                    style="margin-bottom: 5px"
-                    :icon="trash"
+                    slot="start"
+                    :icon="add"
                 />
+                <ion-label>Добавить сертификат</ion-label>
               </ion-button>
-            </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+        <ion-modal
+            ref="modal"
+            trigger="open-modal">
+          <ion-header>
+            <ion-toolbar>
+              <ion-buttons slot="start">
+                <ion-button @click="cancel()">
+                  Отменить
+                </ion-button>
+              </ion-buttons>
+              <ion-buttons slot="end">
+                <ion-button
+                    :strong="true"
+                    @click="confirm()">
+                  Сохранить
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content class="ion-no-padding ion-margin-top">
+            <ion-text class="ion-padding flex-column text-xl ion-margin-top">
+              Загрука диплома
+            </ion-text>
+            <ion-list>
+              <ion-item>
+                <input
+                    @change="onFileChange"
+                    ref="fileInput"
+                    type="file"
+                />
+              </ion-item>
+            </ion-list>
+            <ion-grid class="ion-padding">
+              <ion-row v-if="currentType === 'diplomas'">
+                <ion-img
+                    v-for="(item, index) of form.documents"
+                    :key="index"
+                    style="width: 100px; height: 100px; border-radius: 100%; object-fit: cover"
+                    :src="item"
+                ></ion-img>
+              </ion-row>
+              <ion-row v-if="currentType === 'cert'">
+                <ion-img
+                    v-for="(item, index) of form.documents"
+                    :key="index"
+                    style="width: 100px; height: 100px; border-radius: 100%; object-fit: cover"
+                    :src="item"
+                ></ion-img>
+              </ion-row>
+            </ion-grid>
+
             <ion-button
-                id="open-modal"
+                @click="sendForm('diplomas')"
+                class="ion-margin-top ion-no-margin ion-padding"
                 expand="block">
-              <ion-icon
-                  slot="start"
-                  :icon="add"
-              />
-              <ion-label>Добавить сертификат</ion-label>
+              Сохранить
             </ion-button>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-      <ion-modal
-          ref="modal"
-          trigger="open-modal"
-          @willDismiss="onWillDismiss">
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start">
-              <ion-button @click="cancel()">
-                Отменить
-              </ion-button>
-            </ion-buttons>
-            <ion-buttons slot="end">
-              <ion-button
-                  :strong="true"
-                  @click="confirm()">
-                Сохранить
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <ion-item>
-            <ion-input
-                label="Enter your name"
-                label-placement="stacked"
-                ref="input"
-                type="text"
-                placeholder="Your name"
-            ></ion-input>
-          </ion-item>
-        </ion-content>
-      </ion-modal>
+          </ion-content>
+        </ion-modal>
+      </ion-col>
+      <ion-spinner v-else></ion-spinner>
     </ion-content>
   </ion-page>
 </template>

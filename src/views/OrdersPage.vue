@@ -9,7 +9,8 @@ import {
   IonCard,
   IonCardHeader,
   IonCardContent,
-    IonNavLink,
+  IonNavLink,
+  IonSpinner,
   IonText,
   IonCardTitle,
   IonChip,
@@ -58,93 +59,97 @@ onMounted(async () => {
   <ion-page>
     <HeaderBlock/>
     <ion-content
-        color="light"
-        v-if="orders.result">
+        ref="content"
+        fullscreen>
       <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
-      <ion-grid class="ion-padding">
-        <ion-row>
-          <ion-button
-              v-for="(item, index) of links"
-              @click="tab = item.type; orders.listOrders({type: tab})"
-              :key="index"
-              :fill="tab === item.type ? 'solid' : 'clear'"
-              size="small"
-          >
-            {{ item.title }}
-          </ion-button>
-        </ion-row>
-      </ion-grid>
-      <ion-grid>
-        <ion-row>
-          <ion-col>
-            <ion-card
-                v-for="(order, index) of orders.result.data"
+      <ion-col v-if="orders.result">
+        <ion-grid class="ion-padding">
+          <ion-row>
+            <ion-button
+                v-for="(item, index) of links"
+                @click="tab = item.type; orders.listOrders({type: tab})"
                 :key="index"
-                class="ion-margin-bottom ion-no-margin"
+                :fill="tab === item.type ? 'solid' : 'clear'"
+                size="small"
             >
+              {{ item.title }}
+            </ion-button>
+          </ion-row>
+        </ion-grid>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-card
+                  v-for="(order, index) of orders.result.data"
+                  :key="index"
+                  color="light"
+                  class="ion-margin-bottom ion-no-margin"
+              >
 
-              <ion-card-header>
-                <ion-grid style="width: 100%">
-                  <ion-row
-                      style="width: 100%"
-                      class="ion-align-items-center ion-justify-content-between">
-                    <ion-card-title>
-                      №{{ order.order_number }}
-                    </ion-card-title>
-                    <ion-chip
-                        class="ion-no-margin"
-                        style="width: max-content">
-                      {{ order.status }}
-                    </ion-chip>
-                  </ion-row>
-                </ion-grid>
-              </ion-card-header>
+                <ion-card-header>
+                  <ion-grid style="width: 100%">
+                    <ion-row
+                        style="width: 100%"
+                        class="ion-align-items-center ion-justify-content-between">
+                      <ion-card-title>
+                        №{{ order.order_number }}
+                      </ion-card-title>
+                      <ion-chip
+                          class="ion-no-margin"
+                          style="width: max-content">
+                        {{ order.status }}
+                      </ion-chip>
+                    </ion-row>
+                  </ion-grid>
+                </ion-card-header>
 
-              <ion-card-content>
-                <ion-grid class="ion-no-padding ion-margin-bottom">
-                  <ion-row class="ion-margin-bottom">
-                    <ion-col class="ion-no-padding">
-                      <ion-col class="flex-column">
-                        <ion-text>Дата создания:</ion-text>
-                        <ion-text>{{ order.date.day }}</ion-text>
+                <ion-card-content>
+                  <ion-grid class="ion-no-padding ion-margin-bottom">
+                    <ion-row class="ion-margin-bottom">
+                      <ion-col class="ion-no-padding">
+                        <ion-col class="flex-column">
+                          <ion-text>Дата создания:</ion-text>
+                          <ion-text>{{ order.date.day }}</ion-text>
+                        </ion-col>
                       </ion-col>
-                    </ion-col>
-                    <ion-col class="ion-no-padding">
-                      <ion-col class="flex-column">
-                        <ion-text>Время:</ion-text>
-                        <ion-text>{{ order.date.start }} - {{ order.date.end }}</ion-text>
+                      <ion-col class="ion-no-padding">
+                        <ion-col class="flex-column">
+                          <ion-text>Время:</ion-text>
+                          <ion-text>{{ order.date.start }} - {{ order.date.end }}</ion-text>
+                        </ion-col>
                       </ion-col>
-                    </ion-col>
-                  </ion-row>
-                  <ion-row>
-                    <ion-col class="ion-no-padding">
-                      <ion-col class="flex-column">
-                        <ion-text>Цена:</ion-text>
-                        <ion-text>{{ order.price }}</ion-text>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col class="ion-no-padding">
+                        <ion-col class="flex-column">
+                          <ion-text>Цена:</ion-text>
+                          <ion-text>{{ order.price }}</ion-text>
+                        </ion-col>
                       </ion-col>
-                    </ion-col>
-                    <ion-col class="ion-no-padding">
-                      <ion-col class="flex-column">
-                        <ion-text>Тип:</ion-text>
-                        <ion-text>{{ order.name }}</ion-text>
+                      <ion-col class="ion-no-padding">
+                        <ion-col class="flex-column">
+                          <ion-text>Тип:</ion-text>
+                          <ion-text>{{ order.name }}</ion-text>
+                        </ion-col>
                       </ion-col>
-                    </ion-col>
-                  </ion-row>
-                </ion-grid>
-                <ion-nav-link
-                    :router-link="'/orders/' + order.id"
-                    router-direction="forward">
-                  <ion-button>
-                    Перейти к заказу
-                  </ion-button>
-                </ion-nav-link>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+                    </ion-row>
+                  </ion-grid>
+                  <ion-nav-link
+                      :router-link="'/orders/' + order.id"
+                      router-direction="forward">
+                    <ion-button>
+                      Перейти к заказу
+                    </ion-button>
+                  </ion-nav-link>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-col>
+      <ion-spinner v-else></ion-spinner>
     </ion-content>
   </ion-page>
 </template>

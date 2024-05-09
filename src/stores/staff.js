@@ -16,6 +16,8 @@ export const useStaffStore = defineStore('staff', () => {
     const resultChangedPassword = ref(null);
     const resultUpdatedJB = ref(null);
     const resultUpdatedSchedule = ref(null);
+    const resultUploadedFiles = ref(null);
+    const resultImportedDoc = ref(null);
 
     return {
         result,
@@ -31,6 +33,8 @@ export const useStaffStore = defineStore('staff', () => {
         resultChangedPassword,
         resultUpdatedJB,
         resultUpdatedSchedule,
+        resultUploadedFiles,
+        resultImportedDoc,
         getStaff(queryParams = {}) {
             const queryString = new URLSearchParams(queryParams).toString();
             axios.get(`/staff/?${queryString}`)
@@ -216,7 +220,7 @@ export const useStaffStore = defineStore('staff', () => {
             const formData = new FormData();
             await formData.append('file', file);
 
-            axios.post(`/staff/import-docs`, formData)
+            await axios.post(`/staff/import-docs`, formData)
                 .then(response => {
                     if (response.status === 200) {
                         resultDoc.value = response.data
@@ -302,6 +306,21 @@ export const useStaffStore = defineStore('staff', () => {
                 .catch(error => {
                     console.error(error);
                     resultUpdatedSchedule.value = false
+                });
+        },
+
+        async uploadFiles(form) {
+            await axios.post(`staff/documents`, form)
+                .then(response => {
+                    if (response.status === 200) {
+                        resultUploadedFiles.value = response.data
+                    } else {
+                        resultUploadedFiles.value = false
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    resultUploadedFiles.value = false
                 });
         },
     }

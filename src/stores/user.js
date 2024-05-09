@@ -35,5 +35,23 @@ export const useUserStore = defineStore('user', () => {
                     result.value = false
                 });
         },
+
+        async setImage(file) {
+            const formData = new FormData();
+            formData.append('img', file);
+
+            await axios.post(`/users/set-img`, formData)
+            .then(response => {
+                if (response.status === 200) {
+                    resultImage.value = response.data
+                } else {
+                    resultImage.value = false
+                }
+            })
+                .catch(error => {
+                    console.error(error);
+                    resultImage.value = false
+                });
+        },
     }
 })
